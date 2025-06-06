@@ -47,7 +47,7 @@ namespace DemoWebAPI.Controllers
         [HttpPost]
         [ProducesResponseType(201 , Type = typeof(TrainerDTO))]
         [Produces("application/json")]
-        public IActionResult Create(CreateTrainerDTO trainer)
+        public IActionResult Create([FromBody]CreateTrainerDTO trainer)
         {
             if (trainer == null)
             {
@@ -58,15 +58,13 @@ namespace DemoWebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(200, Type = typeof(TrainerDTO))]  
         [ProducesResponseType(404)]
         [Produces("application/json")]
-        public IActionResult Update(int id, Trainer trainer)
+        public IActionResult Update(int id, UpdateTrainerDTO trainer)
         {
-            if (trainer == null || id != trainer.Id)
-            {
-                return BadRequest("Trainer data is invalid");
-            }
-            Trainer? updatedTrainer = _trainerRepository.Update(id, trainer);
+        
+            Trainer? updatedTrainer = _trainerRepository.Update(id, UpdateTrainerDTO.ToEntity(trainer));
             if (updatedTrainer == null)
             {
                 return NotFound();
