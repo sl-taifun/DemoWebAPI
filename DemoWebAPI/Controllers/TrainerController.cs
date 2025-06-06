@@ -1,4 +1,5 @@
-﻿using FakeDAL.Entities;
+﻿using DemoWebAPI.DTO;
+using FakeDAL.Entities;
 using FakeDAL.Interfaces;
 using FakeDAL.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -18,17 +19,19 @@ namespace DemoWebAPI.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<Trainer>))]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<TrainerDTO>))]
         [ProducesResponseType(404)]
         [Produces("application/json")]
         public IActionResult GetAll()
         {
-            IEnumerable<Trainer> trainers = _trainerRepository.GetAll();
+            IEnumerable<TrainerDTO> trainers = _trainerRepository.GetAll()
+                .Select(entity => new TrainerDTO(entity));
+
             return Ok(trainers);
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(200, Type = typeof(Trainer))]
+        [ProducesResponseType(200, Type = typeof(TrainerDTO))]
         [ProducesResponseType(404)]
         [Produces("application/json")]
         public IActionResult GetById(int id)
@@ -38,20 +41,20 @@ namespace DemoWebAPI.Controllers
             {
                 return NotFound(new { message = $"Trainer #{id} not found"});
             }
-            return Ok(trainer);
+            return Ok(new TrainerDTO(trainer));
         }
 
         [HttpPost]
-        [ProducesResponseType(201 , Type = typeof(Trainer))]
+        [ProducesResponseType(201 , Type = typeof(TrainerDTO))]
         [Produces("application/json")]
-        public IActionResult Create(Trainer trainer)
+        public IActionResult Create(CreateTrainerDTO trainer)
         {
             if (trainer == null)
             {
                 return BadRequest("Trainer cannot be null");
             }
-            Trainer createdTrainer = _trainerRepository.Add(trainer);
-            return CreatedAtAction(nameof(GetById), new { id = createdTrainer.Id }, createdTrainer);
+            TrainerDTO trainerAdded = new TrainerDTO(_trainerRepository.Add(CreateTrainerDTO.ToEntity(trainer)));
+            return CreatedAtAction(nameof(GetById), new { id = trainerAdded.Id }, trainerAdded);
         }
 
         [HttpPut("{id}")]
